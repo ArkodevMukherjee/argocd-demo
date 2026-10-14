@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: demo-app
-          image: arkodevmukherjee1234/demo-app:latest
+          image: arkodevmukherjee1234/demo-app:384358399a3b6fe31140bbf2497647a362d8aa05
           ports:
             - containerPort: 5000
           readinessProbe:
