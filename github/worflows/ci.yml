@@ -1,0 +1,34 @@
+name: CI
+on:
+  push:
+    branches: [main]
+    paths: ["app/**"]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: ./app
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/demo-app:${{ github.sha }}
+
+      - name: Update image tag in manifest
+        run: |
+          sed -i "s|image: .*/demo-app:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/demo-app:${{ github.sha }}|" k8s/deployment.yaml
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add k8s/deployment.yaml
+          git commit -m "ci: update image to ${{ github.sha }} [skip ci]"
+          git push
